@@ -1,0 +1,141 @@
+name: Validate OpenClaw Father Repository
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['main', 'develop']
+
+jobs:
+  validate:
+    name: Validate Repository Content
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install markdownlint
+        run: npm install -g markdownlint-cli
+
+      - name: Validate markdown files
+        run: |
+          echo "Validating all markdown files..."
+          markdownlint '**/*.md' --ignore node_modules --ignore .git
+        continue-on-error: false
+
+      - name: Install JSON schema validator
+        run: |
+          npm install -g ajv-cli
+
+      - name: Validate JSON files structure
+        run: |
+          echo "Checking JSON file validity..."
+
+          # Check lessons-learned.json
+          if [ -f "lessons-learned.json" ]; then
+            echo "Validating lessons-learned.json structure..."
+            jq empty lessons-learned.json || exit 1
+            echo "✓ lessons-learned.json is valid JSON"
+          else
+            echo "⚠ lessons-learned.json not found (skipping)"
+          fi
+
+          # Check version-tracker.json
+          if [ -f "knowledge/version-tracker.json" ]; then
+            echo "Validating version-tracker.json structure..."
+            jq empty knowledge/version-tracker.json || exit 1
+            echo "✓ version-tracker.json is valid JSON"
+          else
+            echo "⚠ version-tracker.json not found (skipping)"
+          fi
+
+      - name: Check SKILL.md frontmatter
+        run: |
+          echo "Checking SKILL.md files for frontmatter..."
+          find . -name "SKILL.md" -type f | while read -r skill_file; do
+            echo "Checking $skill_file..."
+
+            # Check if file has frontmatter (starts with ---)
+            if ! head -n 1 "$skill_file" | grep -q '^---'; then
+              echo "✗ $skill_file missing frontmatter delimiter"
+              exit 1
+            fi
+
+            # Extract frontmatter and check for required fields
+            frontmatter=$(sed -n '/^---$/,/^---$/p' "$skill_file")
+
+            if ! echo "$frontmatter" | grep -q 'name:'; then
+              echo "✗ $skill_file missing 'name' in frontmatter"
+              exit 1
+            fi
+
+            if ! echo "$frontmatter" | grep -q 'description:'; then
+              echo "✗ $skill_file missing 'description' in frontmatter"
+              exit 1
+            fi
+
+            echo "✓ $skill_file has valid frontmatter"
+          done
+          echo "All SKILL.md files have valid frontmatter"
+
+      - name: Check knowledge sync
+        run: |
+          echo "Checking knowledge/ files match claude-code/references/..."
+
+          # Check if directories exist
+          if [ ! -d "knowledge" ]; then
+            echo "⚠ knowledge/ directory not found (skipping sync check)"
+            exit 0
+          fi
+
+          if [ ! -d "claude-code/references" ]; then
+            echo "⚠ claude-code/references/ directory not found (skipping sync check)"
+            exit 0
+          fi
+
+          # Compare markdown files
+          echo "Comparing markdown files..."
+          for knowledge_file in knowledge/*.md; do
+            if [ -f "$knowledge_file" ]; then
+              basename=$(basename "$knowledge_file")
+              reference_file="claude-code/references/$basename"
+
+              if [ -f "$reference_file" ]; then
+                if ! diff -q "$knowledge_file" "$reference_file" > /dev/null; then
+                  echo "✗ $basename is out of sync between knowledge/ and claude-code/references/"
+                  echo "Run: cp $knowledge_file $reference_file"
+                  exit 1
+                fi
+                echo "✓ $basename is in sync"
+              else
+                echo "⚠ $basename exists in knowledge/ but not in claude-code/references/"
+              fi
+            fi
+          done
+
+          echo "All checked files are in sync"
+
+      - name: Check bash script syntax
+        run: |
+          echo "Checking bash script syntax..."
+          find . -name '*.sh' -type f | while read -r script; do
+            echo "Checking $script..."
+            bash -n "$script" || exit 1
+            echo "✓ $script syntax is valid"
+          done
+          echo "All bash scripts have valid syntax"
+
+      - name: Report results
+        if: always()
+        run: |
+          echo "===================="
+          echo "Validation Complete"
+          echo "===================="
+          echo "All checks passed! ✓"

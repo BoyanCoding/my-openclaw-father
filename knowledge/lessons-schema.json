@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openclaw-father.dev/schemas/lessons-learned.json",
+  "title": "OpenClaw Father Lessons Learned",
+  "description": "Schema for accumulated installation and configuration experience",
+  "type": "object",
+  "required": ["lessons"],
+  "properties": {
+    "lessons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "timestamp", "category", "scenario", "resolution"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^ll-[0-9a-f]{8}$",
+            "description": "Unique lesson identifier"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When this lesson was recorded"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["install", "config", "channel", "security", "model", "diagnostics", "general"],
+            "description": "Which phase of the setup this relates to"
+          },
+          "scenario": {
+            "type": "string",
+            "minLength": 10,
+            "description": "What the user was trying to do or what went wrong"
+          },
+          "resolution": {
+            "type": "string",
+            "minLength": 10,
+            "description": "What fixed it or what should be done differently"
+          },
+          "context": {
+            "type": "object",
+            "description": "Optional environment details",
+            "properties": {
+              "os": {
+                "type": "string",
+                "description": "Operating system (e.g., Ubuntu 22.04, macOS 15)"
+              },
+              "installMethod": {
+                "type": "string",
+                "enum": ["curl", "npm", "pnpm", "bun", "docker", "source"],
+                "description": "How OpenClaw was installed"
+              },
+              "channel": {
+                "type": "string",
+                "description": "Channel being configured (e.g., telegram, discord)"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Model provider (e.g., anthropic, openai)"
+              },
+              "errorPattern": {
+                "type": "string",
+                "description": "Key error message or pattern to match against"
+              }
+            },
+            "additionalProperties": false
+          },
+          "frequency": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1,
+            "description": "How many times this scenario has been encountered"
+          },
+          "lastSeen": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When this scenario was last encountered"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

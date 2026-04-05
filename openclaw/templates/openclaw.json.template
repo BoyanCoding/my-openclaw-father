@@ -1,0 +1,110 @@
+// OpenClaw Base Configuration Template
+// This is a minimal configuration with default settings
+// Use this as a starting point for your OpenClaw setup
+
+{
+  // === AGENTS SECTION ===
+  // Define AI agents with their models and permissions
+  "agents": {
+    "default": {
+      "workspace": "/home/boyanpc/my-openclaw-father/workspace",
+      "model": {
+        "primary": "${CLAW_PRIMARY_MODEL:-claude-sonnet}",
+        "secondary": "${CLAW_SECONDARY_MODEL:-claude-haiku}",
+        "fallback": "${CLAW_FALLBACK_MODEL:-gpt-4o}"
+      },
+      "sandbox": "non-main",
+      "max_tokens": 4000,
+      "temperature": 0.7
+    }
+  },
+
+  // === GATEWAY SECTION ===
+  // Network and authentication settings
+  "gateway": {
+    "port": 18789,
+    "host": "127.0.0.1",  // Bind to loopback only for security
+    "auth": {
+      "mode": "token",
+      "token": "${CLAW_AUTH_TOKEN:-your-secret-token-here}",
+      "jwt_secret": "${CLAW_JWT_SECRET:-your-jwt-secret-here}",
+      "token_header": "Authorization",
+      "prefix": "Bearer "
+    },
+    "cors": {
+      "enabled": true,
+      "origins": ["http://localhost:3000", "http://localhost:8080"],
+      "methods": ["GET", "POST", "PUT", "DELETE"],
+      "headers": ["Content-Type", "Authorization"]
+    }
+  },
+
+  // === IDENTITY SECTION ===
+  // Bot identity and appearance
+  "identity": {
+    "name": "${CLAW_BOT_NAME:-OpenClaw Assistant}",
+    "theme": "${CLAW_BOT_THEME:-default}",
+    "emoji": "${CLAW_BOT_EMOJI:-🤖}",
+    "description": "OpenClaw - Your AI Assistant Gateway",
+    "version": "1.0.0"
+  },
+
+  // === CHANNELS SECTION ===
+  // Communication channels (empty by default, add as needed)
+  "channels": {
+    // Example channel structure:
+    // "telegram": {
+    //   "enabled": true,
+    //   "token": "${TELEGRAM_TOKEN}",
+    //   "webhook": "${TELEGRAM_WEBHOOK_URL}"
+    // },
+    // Add your channel configurations here
+  },
+
+  // === TOOLS SECTION ===
+  // Available tool profiles and configurations
+  "tools": {
+    "profile": "messaging",
+    "enabled": [
+      "file_system",
+      "web_search",
+      "code_execution",
+      "image_generation"
+    ],
+    "disabled": [
+      "system_commands"
+    ]
+  },
+
+  // === SESSION SECTION ===
+  // Session management and maintenance
+  "session": {
+    "reset_daily": true,
+    "reset_time": "04:00",  // Daily reset at 4 AM
+    "maintenance": {
+      "enabled": true,
+      "mode": "warn",
+      "warning_threshold": 85,  // 85% usage
+      "auto_restart": false
+    },
+    "timeout": 1800,  // 30 minutes of inactivity
+    "max_concurrent": 10
+  },
+
+  // === ENVIRONMENT VARIABLES ===
+  // Set these in your environment or .env file
+  "env": {
+    // Required:
+    // CLAW_AUTH_TOKEN - Authentication token for API access
+    // CLAW_JWT_SECRET - Secret for JWT tokens
+    // CLAW_PRIMARY_MODEL - Primary AI model to use
+
+    // Optional:
+    // CLAW_BOT_NAME - Bot display name
+    // CLAW_BOT_THEME - UI theme (default/dark/light)
+    // CLAW_BOT_EMOJI - Bot emoji icon
+    // DATABASE_URL - Database connection string
+    // LOG_LEVEL - Logging level (debug/info/warn/error)
+    // PORT - Alternative port number
+  }
+}

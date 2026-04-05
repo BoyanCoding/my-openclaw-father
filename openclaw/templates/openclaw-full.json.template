@@ -1,0 +1,318 @@
+// OpenClaw Full Configuration Template
+// Complete configuration with all channel types and advanced options
+// Copy this template and uncomment/modify as needed
+
+{
+  // === AGENTS SECTION ===
+  // Define multiple AI agents with different permissions
+  "agents": {
+    "main": {
+      "workspace": "/home/boyanpc/my-openclaw-father/workspace",
+      "model": {
+        "primary": "${CLAW_PRIMARY_MODEL:-claude-sonnet}",
+        "secondary": "${CLAW_SECONDARY_MODEL:-claude-haiku}",
+        "fallback": "${CLAW_FALLBACK_MODEL:-gpt-4o}"
+      },
+      "sandbox": "main",
+      "max_tokens": 4000,
+      "temperature": 0.7,
+      "capabilities": ["all"]
+    },
+    "restricted": {
+      "workspace": "/home/boyanpc/my-openclaw-father/workspace/restricted",
+      "model": {
+        "primary": "${CLAW_SECONDARY_MODEL:-claude-haiku}",
+        "secondary": "${CLAW_FALLBACK_MODEL:-gpt-4o}"
+      },
+      "sandbox": "non-main",
+      "max_tokens": 2000,
+      "temperature": 0.5,
+      "capabilities": ["messaging", "file_operations", "web_search"]
+    }
+  },
+
+  // === GATEWAY SECTION ===
+  // Network and authentication settings
+  "gateway": {
+    "port": 18789,
+    "host": "127.0.0.1",  // Bind to loopback only for security
+    "auth": {
+      "mode": "token",
+      "token": "${CLAW_AUTH_TOKEN:-your-secret-token-here}",
+      "jwt_secret": "${CLAW_JWT_SECRET:-your-jwt-secret-here}",
+      "token_header": "Authorization",
+      "prefix": "Bearer ",
+      "refresh_token": "${CLAW_REFRESH_TOKEN:-your-refresh-token}"
+    },
+    "cors": {
+      "enabled": true,
+      "origins": ["http://localhost:3000", "http://localhost:8080", "https://yourdomain.com"],
+      "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      "headers": ["Content-Type", "Authorization", "X-Requested-With"]
+    },
+    "rate_limit": {
+      "enabled": true,
+      "requests_per_minute": 60,
+      "burst_size": 10
+    }
+  },
+
+  // === IDENTITY SECTION ===
+  // Bot identity and appearance
+  "identity": {
+    "name": "${CLAW_BOT_NAME:-OpenClaw Assistant}",
+    "theme": "${CLAW_BOT_THEME:-default}",
+    "emoji": "${CLAW_BOT_EMOJI:-🤖}",
+    "description": "OpenClaw - Your AI Assistant Gateway",
+    "version": "1.0.0",
+    "language": "en-US",
+    "timezone": "UTC"
+  },
+
+  // === CHANNELS SECTION ===
+  // Communication channels with full configurations
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "token": "${TELEGRAM_TOKEN}",
+      "webhook": "${TELEGRAM_WEBHOOK_URL}",
+      "bot_name": "${TELEGRAM_BOT_NAME:-OpenClawBot}",
+      "parse_mode": "HTML",
+      "disable_web_page_preview": true
+    },
+    "discord": {
+      "enabled": false,
+      "bot_token": "${DISCORD_BOT_TOKEN}",
+      "application_id": "${DISCORD_APP_ID}",
+      "guild_id": "${DISCORD_GUILD_ID}",
+      "webhook_id": "${DISCORD_WEBHOOK_ID}",
+      "webhook_token": "${DISCORD_WEBHOOK_TOKEN}"
+    },
+    "slack": {
+      "enabled": false,
+      "bot_token": "${SLACK_BOT_TOKEN}",
+      "signing_secret": "${SLACK_SIGNING_SECRET}",
+      "app_token": "${SLACK_APP_TOKEN}",
+      "verification_token": "${SLACK_VERIFICATION_TOKEN}",
+      "default_channel": "#general"
+    },
+    "whatsapp": {
+      "enabled": false,
+      "business_phone_number_id": "${WHATSAPP_PHONE_ID}",
+      "access_token": "${WHATSAPP_ACCESS_TOKEN}",
+      "verify_token": "${WHATSAPP_VERIFY_TOKEN}",
+      "graph_api_version": "v18.0"
+    },
+    "signal": {
+      "enabled": false,
+      "username": "${SIGNAL_USERNAME}",
+      "password": "${SIGNAL_PASSWORD}",
+      "url": "${SIGNAL_SERVICE_URL:-https://signal.local}",
+      "port": ${SIGNAL_PORT:-8080}
+    },
+    "imessage": {
+      "enabled": false,
+      "email": "${IMESSAGE_EMAIL}",
+      "password": "${IMESSAGE_PASSWORD}",
+      "api_url": "${IMESSAGE_API_URL:-https://api.apple.com}"
+    },
+    "matrix": {
+      "enabled": false,
+      "homeserver": "${MATRIX_HOMESERVER:-https://matrix.org}",
+      "user_id": "${MATRIX_USER_ID}",
+      "access_token": "${MATRIX_ACCESS_TOKEN}",
+      "room_id": "${MATRIX_ROOM_ID}"
+    },
+    "teams": {
+      "enabled": false,
+      "bot_app_id": "${TEAMS_APP_ID}",
+      "bot_app_password": "${TEAMS_APP_PASSWORD}",
+      "tenant_id": "${TEAMS_TENANT_ID}",
+      "webhook_url": "${TEAMS_WEBHOOK_URL}"
+    },
+    "feishu": {
+      "enabled": false,
+      "app_id": "${FEISHU_APP_ID}",
+      "app_secret": "${FEISHU_APP_SECRET}",
+      "verification_token": "${FEISHU_VERIFICATION_TOKEN}",
+      "webhook_url": "${FEISHU_WEBHOOK_URL}"
+    },
+    "google_chat": {
+      "enabled": false,
+      "space_id": "${GOOGLE_CHAT_SPACE_ID}",
+      "webhook_url": "${GOOGLE_CHAT_WEBHOOK_URL}",
+      "service_account": "${GOOGLE_CHAT_SERVICE_ACCOUNT}"
+    },
+    "mattermost": {
+      "enabled": false,
+      "url": "${MATTERMOST_URL:-https://your.mattermost.com}",
+      "bot_username": "${MATTERMOST_BOT_USERNAME}",
+      "bot_access_token": "${MATTERMOST_ACCESS_TOKEN}",
+      "team_id": "${MATTERMOST_TEAM_ID}"
+    },
+    "line": {
+      "enabled": false,
+      "channel_access_token": "${LINE_ACCESS_TOKEN}",
+      "channel_secret": "${LINE_CHANNEL_SECRET}",
+      "webhook_base_url": "${LINE_WEBHOOK_URL}"
+    },
+    "zalo": {
+      "enabled": false,
+      "callback_url": "${ZALO_CALLBACK_URL}",
+      "api_key": "${ZALO_API_KEY}",
+      "secret_key": "${ZALO_SECRET_KEY}"
+    }
+  },
+
+  // === AUTH PROFILES SECTION ===
+  // Authentication provider configurations
+  "auth_profiles": {
+    "google": {
+      "enabled": false,
+      "client_id": "${GOOGLE_CLIENT_ID}",
+      "client_secret": "${GOOGLE_CLIENT_SECRET}",
+      "redirect_uri": "${GOOGLE_REDIRECT_URI}",
+      "scopes": ["openid", "profile", "email"]
+    },
+    "github": {
+      "enabled": false,
+      "client_id": "${GITHUB_CLIENT_ID}",
+      "client_secret": "${GITHUB_CLIENT_SECRET}",
+      "scopes": ["read:user", "user:email"]
+    },
+    "azure_ad": {
+      "enabled": false,
+      "tenant_id": "${AZURE_TENANT_ID}",
+      "client_id": "${AZURE_CLIENT_ID}",
+      "client_secret": "${AZURE_CLIENT_SECRET}",
+      "redirect_uri": "${AZURE_REDIRECT_URI}",
+      "scopes": ["openid", "profile", "email"]
+    }
+  },
+
+  // === TOOLS SECTION ===
+  // Available tool profiles and configurations
+  "tools": {
+    "profile": "messaging",
+    "enabled": [
+      "file_system",
+      "web_search",
+      "code_execution",
+      "image_generation",
+      "database",
+      "email"
+    ],
+    "disabled": [
+      "system_commands",
+      "admin_tools"
+    ],
+    "tool_config": {
+      "web_search": {
+        "engine": "bing",
+        "api_key": "${WEB_SEARCH_API_KEY}",
+        "max_results": 10,
+        "timeout": 5000
+      },
+      "code_execution": {
+        "timeout": 30000,
+        "max_output": 5000,
+        "allowed_languages": ["python", "javascript", "bash", "json"]
+      },
+      "database": {
+        "type": "${DB_TYPE:-sqlite}",
+        "url": "${DATABASE_URL}",
+        "pool_size": 10
+      }
+    }
+  },
+
+  // === LOGGING SECTION ===
+  // Logging configuration
+  "logging": {
+    "level": "${LOG_LEVEL:-info}",
+    "format": "json",
+    "outputs": [
+      {
+        "type": "file",
+        "path": "/var/log/openclaw/app.log",
+        "max_size": "100MB",
+        "max_files": 5
+      },
+      {
+        "type": "console",
+        "colorize": true
+      }
+    ],
+    "loggers": {
+      "openclaw": {
+        "level": "info",
+        "handlers": ["file", "console"]
+      },
+      "channel": {
+        "level": "debug",
+        "handlers": ["file"]
+      }
+    }
+  },
+
+  // === BROWSER CONFIGURATION ===
+  // Browser automation settings
+  "browser": {
+    "enabled": true,
+    "headless": true,
+    "user_agent": "${BROWSER_USER_AGENT:-OpenClawBot/1.0}",
+    "timeout": 30000,
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "block_ads": true,
+    "trackers": {
+      "enabled": true,
+      "block_list": ["doubleclick.net", "googleadservices.com"]
+    }
+  },
+
+  // === SESSION SECTION ===
+  // Session management and maintenance
+  "session": {
+    "reset_daily": true,
+    "reset_time": "04:00",  // Daily reset at 4 AM
+    "maintenance": {
+      "enabled": true,
+      "mode": "warn",
+      "warning_threshold": 85,  // 85% usage
+      "auto_restart": false,
+      "schedule": "0 4 * * *"
+    },
+    "timeout": 1800,  // 30 minutes of inactivity
+    "max_concurrent": 10,
+    "max_sessions_per_user": 5,
+    "session_data_ttl": 86400  // 24 hours
+  },
+
+  // === ENVIRONMENT VARIABLES ===
+  // Set these in your environment or .env file
+  "env": {
+    // Required:
+    "CLAW_AUTH_TOKEN": "Authentication token for API access",
+    "CLAW_JWT_SECRET": "Secret for JWT tokens",
+    "CLAW_PRIMARY_MODEL": "Primary AI model to use",
+
+    // Optional Bot Settings:
+    "CLAW_BOT_NAME": "Bot display name",
+    "CLAW_BOT_THEME": "UI theme (default/dark/light)",
+    "CLAW_BOT_EMOJI": "Bot emoji icon",
+    "DATABASE_URL": "Database connection string",
+
+    // Channel Tokens (uncomment and set):
+    // "TELEGRAM_TOKEN": "Your Telegram bot token",
+    // "DISCORD_BOT_TOKEN": "Your Discord bot token",
+    // "SLACK_BOT_TOKEN": "Your Slack bot token",
+
+    // Optional:
+    "LOG_LEVEL": "Logging level (debug/info/warn/error)",
+    "PORT": "Alternative port number",
+    "NODE_ENV": "Environment (production/development)"
+  }
+}

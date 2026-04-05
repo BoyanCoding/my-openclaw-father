@@ -1,0 +1,90 @@
+{
+  "lessons": [
+    {
+      "id": "ll-a1b2c3d4",
+      "timestamp": "2026-04-05T00:00:00Z",
+      "category": "install",
+      "scenario": "curl installer fails on fresh Ubuntu with 'node: command not found' even though the script claims to handle Node installation",
+      "resolution": "The installer script auto-installs Node, but on some minimal Ubuntu images, curl or ca-certificates is missing. Run 'sudo apt-get update && sudo apt-get install -y curl ca-certificates' first, then retry the installer.",
+      "context": {
+        "os": "Ubuntu 22.04 minimal",
+        "installMethod": "curl"
+      },
+      "frequency": 3,
+      "lastSeen": "2026-04-04T00:00:00Z"
+    },
+    {
+      "id": "ll-e5f6g7h8",
+      "timestamp": "2026-04-05T00:00:00Z",
+      "category": "install",
+      "scenario": "Docker install on VPS fails because Docker Compose v2 plugin is not installed by default on older Docker versions",
+      "resolution": "Install Docker Compose plugin separately: 'sudo apt-get install docker-compose-plugin' or use the standalone docker-compose. Verify with 'docker compose version'.",
+      "context": {
+        "os": "Ubuntu 20.04",
+        "installMethod": "docker"
+      },
+      "frequency": 2,
+      "lastSeen": "2026-04-03T00:00:00Z"
+    },
+    {
+      "id": "ll-i9j0k1l2",
+      "timestamp": "2026-04-05T00:00:00Z",
+      "category": "config",
+      "scenario": "User puts API key directly in openclaw.json instead of .env file, which is a security risk and causes config validation warnings",
+      "resolution": "Always use environment variable substitution in openclaw.json (e.g., '${ANTHROPIC_API_KEY}') and store actual keys in ~/.openclaw/.env. The agent should never write raw API keys to openclaw.json.",
+      "context": {
+        "provider": "anthropic"
+      },
+      "frequency": 5,
+      "lastSeen": "2026-04-05T00:00:00Z"
+    },
+    {
+      "id": "ll-m3n4o5p6",
+      "timestamp": "2026-04-05T00:00:00Z",
+      "category": "channel",
+      "scenario": "Telegram bot not responding to DMs after initial setup - bot token is correct but dmPolicy is set to 'disabled' by default",
+      "resolution": "Check channels.telegram.dmPolicy in openclaw.json. Change from 'disabled' to 'pairing' (recommended) or 'open'. Then restart the gateway with 'openclaw gateway restart'.",
+      "context": {
+        "channel": "telegram"
+      },
+      "frequency": 4,
+      "lastSeen": "2026-04-04T00:00:00Z"
+    },
+    {
+      "id": "ll-q7r8s9t0",
+      "timestamp": "2026-04-05T00:00:00Z",
+      "category": "security",
+      "scenario": "Gateway is exposed to public internet on a VPS deployment without auth, anyone can access the Control UI",
+      "resolution": "Set gateway.auth.mode to 'token' and set a strong token via OPENCLAW_GATEWAY_TOKEN env var. Set gateway.bind to 'loopback' and use a reverse proxy (nginx/caddy) for external access with TLS.",
+      "context": {
+        "os": "Ubuntu 22.04 VPS"
+      },
+      "frequency": 2,
+      "lastSeen": "2026-04-02T00:00:00Z"
+    },
+    {
+      "id": "ll-u1v2w3x4",
+      "timestamp": "2026-04-05T00:00:00Z",
+      "category": "model",
+      "scenario": "OpenClaw onboard completes but agent responses fail with 401 authentication error from the model provider",
+      "resolution": "Verify the API key is valid by testing it directly with the provider's API (e.g., curl to api.anthropic.com). Check that auth-profiles.json was created correctly. For OAuth-based auth, re-run 'openclaw onboard' to refresh the token.",
+      "context": {
+        "provider": "anthropic"
+      },
+      "frequency": 3,
+      "lastSeen": "2026-04-03T00:00:00Z"
+    },
+    {
+      "id": "ll-y5z6a7b8",
+      "timestamp": "2026-04-05T00:00:00Z",
+      "category": "install",
+      "scenario": "'openclaw' command not found after successful npm install - global bin directory not in PATH",
+      "resolution": "Run 'npm prefix -g' to find the global bin directory, then add it to PATH in ~/.bashrc or ~/.zshrc: 'export PATH=\"$(npm prefix -g)/bin:$PATH\"'. Open a new terminal to apply.",
+      "context": {
+        "installMethod": "npm"
+      },
+      "frequency": 6,
+      "lastSeen": "2026-04-05T00:00:00Z"
+    }
+  ]
+}

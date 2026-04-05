@@ -1,0 +1,75 @@
+name: Sync Knowledge to References
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'knowledge/**'
+
+permissions:
+  contents: write
+
+jobs:
+  sync-knowledge:
+    name: Sync knowledge/ to claude-code/references/
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Copy markdown files
+        run: |
+          echo "Copying knowledge/*.md to claude-code/references/..."
+          mkdir -p claude-code/references
+
+          for knowledge_file in knowledge/*.md; do
+            if [ -f "$knowledge_file" ]; then
+              basename=$(basename "$knowledge_file")
+              cp "$knowledge_file" "claude-code/references/$basename"
+              echo "Copied $basename"
+            fi
+          done
+
+      - name: Copy version-tracker.json
+        run: |
+          if [ -f "knowledge/version-tracker.json" ]; then
+            echo "Copying version-tracker.json..."
+            cp knowledge/version-tracker.json claude-code/references/
+            echo "Copied version-tracker.json"
+          fi
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          if [[ -n $(git status --porcelain claude-code/references/) ]]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "Changes detected in claude-code/references/"
+            git status claude-code/references/
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+            echo "No changes detected - files are already in sync"
+          fi
+
+      - name: Commit and push changes
+        if: steps.check_changes.outputs.changes == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add claude-code/references/
+          git commit -m "chore: sync knowledge/ to claude-code/references/ [auto-sync]"
+
+          git push
+          echo "Changes pushed successfully"
+
+      - name: Report no changes
+        if: steps.check_changes.outputs.changes == 'false'
+        run: |
+          echo "===================="
+          echo "Sync Check Complete"
+          echo "===================="
+          echo "No changes needed - knowledge/ and claude-code/references/ are in sync"

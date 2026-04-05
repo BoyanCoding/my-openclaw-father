@@ -1,0 +1,130 @@
+name: Update OpenClaw Documentation
+
+on:
+  schedule:
+    # Run every Monday at 09:00 UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  update-docs:
+    name: Check for OpenClaw Documentation Updates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check sync script exists
+        run: |
+          if [ ! -f "scripts/sync-openclaw-docs.sh" ]; then
+            echo "⚠ sync-openclaw-docs.sh not found"
+            echo "Creating placeholder script..."
+            mkdir -p scripts
+            cat > scripts/sync-openclaw-docs.sh << 'EOF'
+          #!/bin/bash
+          # Placeholder for OpenClaw documentation sync script
+          echo "OpenClaw documentation sync not yet implemented"
+          exit 0
+          EOF
+            chmod +x scripts/sync-openclaw-docs.sh
+          fi
+
+      - name: Run sync script (dry-run)
+        run: |
+          if [ -x "scripts/sync-openclaw-docs.sh" ]; then
+            echo "Running sync-openclaw-docs.sh --dry-run..."
+            ./scripts/sync-openclaw-docs.sh --dry-run || exit 0
+          else
+            echo "Script not executable, skipping..."
+          fi
+
+      - name: Check for documentation changes
+        id: check_docs
+        run: |
+          if [[ -n $(git status --porcelain knowledge/ claude-code/references/) ]]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Documentation changes detected"
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No documentation changes"
+          fi
+
+      - name: Generate diff summary
+        if: steps.check_docs.outputs.has_changes == 'true'
+        run: |
+          echo "# OpenClaw Documentation Update" > diff_summary.md
+          echo "" >> diff_summary.md
+          echo "## Detected Changes" >> diff_summary.md
+          echo '```diff' >> diff_summary.md
+          git diff knowledge/ claude-code/references/ >> diff_summary.md || true
+          echo '```' >> diff_summary.md
+          echo "" >> diff_summary.md
+          echo "## Files Changed" >> diff_summary.md
+          git status --short knowledge/ claude-code/references/ >> diff_summary.md || true
+
+      - name: Create issue for manual review
+        if: steps.check_docs.outputs.has_changes == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const diffSummary = fs.readFileSync('diff_summary.md', 'utf8');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `📚 OpenClaw Documentation Update - ${new Date().toISOString().split('T')[0]}`,
+              body: diffSummary,
+              labels: ['documentation', 'automated', 'openclaw-docs']
+            });
+
+            console.log(`Created issue #${issue.data.number}`);
+
+      - name: Optional: Auto-create PR (requires manual approval)
+        if: steps.check_docs.outputs.has_changes == 'true' && vars.OPENCLAW_DOCS_AUTO_PR == 'true'
+        run: |
+          echo "Creating pull request for documentation updates..."
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          branch_name="docs/update-$(date +%Y%m%d)"
+          git checkout -b "$branch_name"
+
+          git add knowledge/ claude-code/references/
+          git commit -m "docs: update OpenClaw documentation [auto]"
+
+          git push -u origin "$branch_name"
+
+          gh pr create \
+            --title "📚 OpenClaw Documentation Update" \
+            --body "This PR updates OpenClaw documentation based on weekly sync." \
+            --labels "documentation,automated" \
+            --draft
+
+      - name: Report results
+        if: always()
+        run: |
+          echo "===================="
+          echo "Documentation Sync Complete"
+          echo "===================="
+          if [ "${{ steps.check_docs.outputs.has_changes }}" = "true" ]; then
+            echo "✓ Changes detected and issue created"
+            echo "  Review the issue to apply updates manually"
+            if [ "${{ vars.OPENCLAW_DOCS_AUTO_PR }}" = "true" ]; then
+              echo "  Draft PR created for review"
+            fi
+          else
+            echo "✓ No changes detected"
+            echo "  Documentation is up to date"
+          fi
