@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"bash -n /home/boyanpc/my-openclaw-father/scripts/sync-openclaw-docs.sh 2>&1\",\"description\":\"Re-check syntax after edit\"}",
-  "error": "Exit code 2\n/home/boyanpc/my-openclaw-father/scripts/sync-openclaw-docs.sh: line 444: unexpected EOF while looking for matching `\"'",
-  "timestamp": "2026-04-05T09:57:14.719Z",
-  "retry_count": 1
-}
