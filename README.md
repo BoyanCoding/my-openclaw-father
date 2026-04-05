@@ -17,7 +17,7 @@ A friendly expert agent that helps you install and configure [OpenClaw](https://
 
 1. Clone this repo:
 ```bash
-git clone https://github.com/boyanpc/my-openclaw-father.git
+git clone https://github.com/BoyanCoding/my-openclaw-father.git
 ```
 
 2. Install as a Claude Code plugin:
@@ -34,7 +34,7 @@ claude install-plugin ./my-openclaw-father/claude-code
 
 1. Clone this repo into your OpenClaw workspace:
 ```bash
-git clone https://github.com/boyanpc/my-openclaw-father.git ~/.openclaw/workspace/my-openclaw-father
+git clone https://github.com/BoyanCoding/my-openclaw-father.git ~/.openclaw/workspace/my-openclaw-father
 ```
 
 2. Add the agent to your `openclaw.json`:
@@ -157,7 +157,7 @@ Agent: Perfect! Let me check the latest installation docs and
 
 ```bash
 # Clone
-git clone https://github.com/boyanpc/my-openclaw-father.git
+git clone https://github.com/BoyanCoding/my-openclaw-father.git
 cd my-openclaw-father
 
 # Validate JSON
