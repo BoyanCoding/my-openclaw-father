@@ -1,0 +1,7 @@
+{
+  "openclawVersion": "2026.4.5",
+  "lastSynced": "2026-04-05",
+  "docsSha": "initial-seed",
+  "apiChanges": [],
+  "notes": "Initial seed from docs.openclaw.ai research. Run scripts/sync-openclaw-docs.sh to update."
+}
