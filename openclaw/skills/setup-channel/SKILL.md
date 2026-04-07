@@ -257,6 +257,159 @@ To tighten security later, you can switch to **"allowlist"** mode:
 {
   "dmPolicy": {
     "mode": "allowlist",
+
+---
+
+## Multi-Agent Customer Routing
+
+### Purpose
+
+Route different users to different agents with varying permission levels:
+- **Owner (full access)** → Full control over OpenClaw installation
+- **Customers (restricted)** → Limited to internet search + skills only, no host access
+
+### When to Use
+
+- **Customer rental deployments** - Customers pay to use OpenClaw agent
+- **Multi-tenant access** - Different users need different permission levels
+- **Tiered service** - Basic vs Pro customers with different capabilities
+
+### Configuration Pattern
+
+```json
+{
+  "agents": {
+    "list": [
+      {
+        "id": "main",
+        "workspace": "~/.openclaw/workspace"
+      },
+      {
+        "id": "customer",
+        "workspace": "~/.openclaw/workspace-customer",
+        "sandbox": {
+          "mode": "all",
+          "scope": "agent",
+          "workspaceAccess": "none"
+        },
+        "tools": {
+          "allow": ["web_search", "web_fetch", "browser", "telegram"],
+          "deny": [
+            "exec",           // No shell commands
+            "process",        // No process control
+            "read",           // No file reading
+            "write",          // No file writing
+            "edit",           // No file editing
+            "apply_patch",    // No patching
+            "gateway",        // No config changes
+            "cron",           // No scheduled tasks
+            "sessions_spawn",  // No spawning agents
+            "sessions_send",   // No cross-session messaging
+            "canvas",         // No canvas control
+            "nodes",          // No device control
+            "image",          // No image tools
+            "message",         // No outbound messages
+            "memory_search",   // No memory access
+            "memory_get",      // No memory access
+            "memory"          // No memory tools
+          ],
+          "sessions": {
+            "visibility": "self"  // Can only see own sessions
+          }
+        }
+      }
+    ]
+  },
+  "bindings": [
+    {
+      "match": {
+        "channel": "telegram",
+        "peer": { "kind": "dm", "id": "7204913965" }
+      },
+      "agentId": "customer"
+    },
+    {
+      "match": {
+        "channel": "telegram",
+        "peer": { "kind": "dm", "id": "8449601961" }
+      },
+      "agentId": "main"
+    }
+  ]
+}
+```
+
+### Per-Channel-Peer Isolation (Recommended)
+
+```json
+{
+  "session": {
+    "dmScope": "per-channel-peer"
+  }
+}
+```
+
+**What This Does:**
+- Each `channel + sender` pair gets isolated DM context
+- Prevents cross-user context leakage
+- Keeps group chats isolated
+
+### What Customers Get
+
+**✅ Allowed:**
+- Search web (Google, Bing, etc.)
+- Browse websites
+- Use installed skills
+- Ask questions based on agent's knowledge
+- Send/receive messages
+
+**❌ Blocked:**
+- Run commands on host machine
+- Read/write files on machine
+- Access secrets or configuration
+- Change OpenClaw settings
+- Control devices or nodes
+- See other users' sessions
+- Spawn new agents
+- Access workspace files
+
+### Advanced: Different Skill Sets
+
+```json
+{
+  "agents": {
+    "list": [
+      // Research agent - only research skills
+      {
+        "id": "customer-research",
+        "skills": {
+          "allow": ["research", "summarize", "web-search-helper"],
+          "deny": ["coding", "system-admin", "file-operations"]
+        }
+      },
+      // Coding agent - only coding skills
+      {
+        "id": "customer-coding",
+        "skills": {
+          "allow": ["coding", "code-review", "debug-helper"],
+          "deny": ["research", "summarize", "system-admin", "file-operations"]
+        }
+      }
+    ]
+  }
+}
+```
+
+### Common Use Cases
+
+| Use Case | Agent Config | Permissions |
+|-----------|--------------|-------------|
+| **Owner/Operator** | Main agent | Full access |
+| **Basic customer** | Customer agent | Web search + skills only |
+| **Pro customer** | Customer-pro agent | Web search + browsing + skills |
+| **Research tier** | Customer-research | Research skills only |
+| **Coding tier** | Customer-coding | Coding skills only |
+
     "allowedUsers": ["@user1", "@user2"]
   }
 }

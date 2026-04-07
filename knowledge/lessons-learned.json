@@ -5,7 +5,7 @@
       "timestamp": "2026-04-05T00:00:00Z",
       "category": "install",
       "scenario": "curl installer fails on fresh Ubuntu with 'node: command not found' even though the script claims to handle Node installation",
-      "resolution": "The installer script auto-installs Node, but on some minimal Ubuntu images, curl or ca-certificates is missing. Run 'sudo apt-get update && sudo apt-get install -y curl ca-certificates' first, then retry the installer.",
+      "resolution": "The installer script auto-installs Node, but on some minimal Ubuntu images, curl or ca-certificates is missing. Run 'sudo apt-get update && sudo apt-get install -y curl ca-certificates' first, then retry installer.",
       "context": {
         "os": "Ubuntu 22.04 minimal",
         "installMethod": "curl"
@@ -18,7 +18,7 @@
       "timestamp": "2026-04-05T00:00:00Z",
       "category": "install",
       "scenario": "Docker install on VPS fails because Docker Compose v2 plugin is not installed by default on older Docker versions",
-      "resolution": "Install Docker Compose plugin separately: 'sudo apt-get install docker-compose-plugin' or use the standalone docker-compose. Verify with 'docker compose version'.",
+      "resolution": "Install Docker Compose plugin separately: 'sudo apt-get install docker-compose-plugin' or use standalone docker-compose. Verify with 'docker compose version'.",
       "context": {
         "os": "Ubuntu 20.04",
         "installMethod": "docker"
@@ -31,12 +31,12 @@
       "timestamp": "2026-04-05T00:00:00Z",
       "category": "config",
       "scenario": "User puts API key directly in openclaw.json instead of .env file, which is a security risk and causes config validation warnings",
-      "resolution": "Always use environment variable substitution in openclaw.json (e.g., '${ANTHROPIC_API_KEY}') and store actual keys in ~/.openclaw/.env. The agent should never write raw API keys to openclaw.json.",
+      "resolution": "Always use environment variable substitution in openclaw.json (e.g., '\${ANTHROPIC_API_KEY}') and store actual keys in ~/.openclaw/.env. The agent should never write raw API keys to openclaw.json.",
       "context": {
         "provider": "anthropic"
       },
       "frequency": 5,
-      "lastSeen": "2026-04-05T00:00:00Z"
+      "lastSeen": "2026-04-04T00:00:00Z"
     },
     {
       "id": "ll-m3n4o5p6",
@@ -66,8 +66,8 @@
       "id": "ll-u1v2w3x4",
       "timestamp": "2026-04-05T00:00:00Z",
       "category": "model",
-      "scenario": "OpenClaw onboard completes but agent responses fail with 401 authentication error from the model provider",
-      "resolution": "Verify the API key is valid by testing it directly with the provider's API (e.g., curl to api.anthropic.com). Check that auth-profiles.json was created correctly. For OAuth-based auth, re-run 'openclaw onboard' to refresh the token.",
+      "scenario": "OpenClaw onboard completes but agent responses fail with 401 authentication error from model provider",
+      "resolution": "Verify API key is valid by testing it directly with provider's API (e.g., curl to api.anthropic.com). Check that auth-profiles.json was created correctly. For OAuth-based auth, re-run 'openclaw onboard' to refresh the token.",
       "context": {
         "provider": "anthropic"
       },
@@ -79,12 +79,27 @@
       "timestamp": "2026-04-05T00:00:00Z",
       "category": "install",
       "scenario": "'openclaw' command not found after successful npm install - global bin directory not in PATH",
-      "resolution": "Run 'npm prefix -g' to find the global bin directory, then add it to PATH in ~/.bashrc or ~/.zshrc: 'export PATH=\"$(npm prefix -g)/bin:$PATH\"'. Open a new terminal to apply.",
+      "resolution": "Run 'npm prefix -g' to find the global bin directory, then add it to PATH in ~/.bashrc or ~/.zshrc: 'export PATH=\"\$(npm prefix -g)/bin:\$PATH\"'. Open a new terminal to apply.",
       "context": {
         "installMethod": "npm"
       },
       "frequency": 6,
       "lastSeen": "2026-04-05T00:00:00Z"
+    },
+    {
+      "id": "ll-z9a1b2c3",
+      "timestamp": "2026-04-07T14:21:00Z",
+      "category": "security",
+      "scenario": "Needed to verify Telegram bot security configuration for customer deployment",
+      "resolution": "Checked main config (dmPolicy), allowlist file (~/.openclaw/credentials/telegram-default-allowFrom.json), and verified only authorized user (8449601961) was configured. Documented verification checklist, allowlist locations, and common mistakes.",
+      "attempted": "Initially didn't know where allowlist files are stored. Had to search OpenClaw documentation to find references to allowFrom configuration.",
+      "context": {
+        "server": "america-ugi",
+        "customer_use_case": "Rental deployment where customers pay to use OpenClaw agent with restricted access (internet + skills only, no host access)"
+      },
+      "frequency": 1,
+      "lastSeen": "2026-04-07T00:00:00Z",
+      "learned": "Telegram allowlist location: ~/.openclaw/credentials/<channel>-allowFrom.json (default account). Multi-agent routing via bindings[] allows different users to different agents with different permissions. Enables secure customer rental deployments."
     }
   ]
 }

@@ -466,3 +466,79 @@ Your OpenClaw installation is now hardened! Here's what we did:
 - Re-audit after any major config changes
 
 Stay secure! 🔒
+
+---
+
+## Telegram Channel Security
+
+### One-Shot Security Verification
+
+When deploying OpenClaw with Telegram bots, use this checklist to verify security:
+
+```bash
+# 1. Check main config for DM policy
+ssh user@host "cat ~/.openclaw/openclaw.json | grep -A5 telegram"
+# Look for:
+# - "dmPolicy": "pairing" (secure)
+# - Avoid: "dmPolicy": "open" or missing policy
+
+# 2. Check allowlist file
+ssh user@host "cat ~/.openclaw/credentials/telegram-default-allowFrom.json"
+# Verify only authorized user IDs are present
+# File format: {"version": 1, "allowFrom": ["id1", "id2"]}
+
+# 3. Security verdict
+# ✅ dmPolicy: "pairing" + allowlist = SECURED
+# ❌ dmPolicy: "open" = PUBLIC ACCESS
+# ❌ Missing allowlist = UNSECURED
+```
+
+### Allowlist File Locations
+
+| Account Type | File Path |
+|-------------|-----------|
+| **Default account** | `~/.openclaw/credentials/<channel>-allowFrom.json` |
+| **Non-default account** | `~/.openclaw/credentials/<channel>-<accountId>-allowFrom.json` |
+
+### Adding Authorized Users
+
+```bash
+# Check current allowlist
+ssh user@host "cat ~/.openclaw/credentials/telegram-default-allowFrom.json"
+
+# Add new user ID to "allowFrom" array
+# Use jq for safe JSON manipulation
+ssh user@host "jq '.allowFrom += [\"NEW_USER_ID\"]' ~/.openclaw/credentials/telegram-default-allowFrom.json > /tmp/allowlist.json && mv /tmp/allowlist.json ~/.openclaw/credentials/telegram-default-allowFrom.json"
+
+# Restart gateway for changes to take effect
+ssh user@host "systemctl restart openclaw"
+```
+
+### Common Telegram Security Mistakes
+
+| Mistake | Impact | Solution |
+|---------|--------|----------|
+| Not knowing where allowlist is | Can't verify who has access | Document: `~/.openclaw/credentials/<channel>-allowFrom.json` |
+| Assuming `dmPolicy: "pairing"` alone is enough | Anyone with pairing code could access | Must also check allowlist file contents |
+| Forgetting account scoping | Wrong file edited | Default vs non-default accounts use different file names |
+| Not verifying actual user IDs | Assuming correct IDs | Read file contents, don't assume |
+| `dmPolicy: "open"` with `"*"` in allowlist | Public access to bot | Use `"pairing"` or `"allowlist"` without `"*"` |
+
+### DM Policy Options
+
+```json
+{
+  "channels": {
+    "telegram": {
+      "dmPolicy": "pairing"
+    }
+  }
+}
+```
+
+| Policy | Behavior | Security Level |
+|--------|----------|----------------|
+| **`pairing`** (default) | Users get pairing code, must be approved | ⭐⭐⭐ High |
+| **`allowlist`** | Only explicit user IDs can DM | ⭐⭐⭐ High |
+| **`open`** | Anyone can DM (requires `"*"` in `allowFrom`) | ⭐ Low |
+| **`disabled`** | Bot ignores all DMs | ⭐⭐⭐⭐ Maximum |
